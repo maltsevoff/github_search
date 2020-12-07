@@ -37,18 +37,24 @@ class RepositoriesViewModel: NSObject {
 	private func splitRepositoryRequests(name: String) {
 		let reposPerRequest: Int = self.reposLimit / self.pagesNumber
 		let requestsRange = 1...self.pagesNumber
-		
 		self.clearRepositories()
+		
 		requestsRange.forEach { requestNumber in
-			let queue = DispatchQueue(label: "requestQueue\(requestNumber)")
-			queue.async {
-				self.repositorySearchRequest(name: name, limit: reposPerRequest, page: requestNumber) { repos in
-					self.requestsHandlingQueue.async(flags: .barrier) {
-						if !repos.isEmpty {
-							self.add(newRepositories: repos)
-						} else {
-							self.onErrorResponse?()
-						}
+			self.performRequestQueue(repoName: name,
+									 requestNumber: requestNumber,
+									 limit: reposPerRequest)
+		}
+	}
+	
+	private func performRequestQueue(repoName: String, requestNumber: Int, limit: Int) {
+		let queue = DispatchQueue(label: "requestQueue.\(requestNumber)")
+		queue.async {
+			self.repositorySearchRequest(name: repoName, limit: limit, page: requestNumber) { repos in
+				self.requestsHandlingQueue.async(flags: .barrier) {
+					if !repos.isEmpty {
+						self.add(newRepositories: repos)
+					} else {
+						self.onErrorResponse?()
 					}
 				}
 			}

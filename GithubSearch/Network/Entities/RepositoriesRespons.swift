@@ -44,6 +44,4 @@ extension RepositoryInfo: RepositoryCellConfigerProtocol {
 	var starsNumber: String {
 		self.stargazersCount != nil ? "\(self.stargazersCount!)" : "no"
 	}
-	
-	
 }
